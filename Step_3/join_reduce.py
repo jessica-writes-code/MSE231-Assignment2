@@ -1,7 +1,27 @@
 #!/usr/bin/env python2.7
 
 import sys
+import pprint
 
+def passesIntegrityCheck(line_to_write):
+    try:
+        #flag if fare total is less than $3
+        totalFare = float(line_to_write['1'][10])
+        if totalFare < 2.50:
+            return False
+        totalPassengers = int(line_to_write['2'][7])
+        if totalPassengers <= 0:
+            return False
+        tripTime = int(line_to_write['2'][8])
+        if tripTime <= 0:
+            return False
+        tripDistance = float(line_to_write['2'][9])
+        if tripDistance <= 0:
+            return False
+        return True
+    except ValueError:
+        return False
+    
 #Assume input is sorted by key
 if __name__ == "__main__":
     currKey = ""
@@ -23,12 +43,11 @@ if __name__ == "__main__":
             if storedTable == currTable:
                 continue
             else:
-                line_to_write[currTable] = [token for token in tokens\
-                                            if token!=currTable and token!=currKey]
-                line1 = '\t'.join(line_to_write['1'])
-                line2 = '\t'.join(line_to_write['2'])
-                lineToPrint = '\t'.join([currKey, line1, line2])
-                print lineToPrint
+                line_to_write[currTable] = tokens[2:]
+                if passesIntegrityCheck(line_to_write):
+                    line1 = '\t'.join(line_to_write['1'])
+                    line2 = '\t'.join(line_to_write['2'])
+                    lineToPrint = '\t'.join([currKey, line1, line2])
+                    print lineToPrint
         elif len(line_to_write) == 0:
-            line_to_write[currTable] = [token for token in tokens\
-                                        if token!=currTable and token!=currKey]
+            line_to_write[currTable] = tokens[2:]
