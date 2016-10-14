@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 
 import sys
-import pprint
 
 def passesIntegrityCheck(line_to_write):
     try:
