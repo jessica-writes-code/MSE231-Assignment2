@@ -31,24 +31,24 @@ def end_hour(current_hour, hack, dict_features):
    
 
 data = read_mapper_output(sys.stdin)
+# Data become grouped by HackID/Year
 for hack, group in groupby(data, itemgetter(0)):
-    # print >> sys.stderr, group
+    # Sort records with same HackID by trip start date/time
     group = sorted(group, key=itemgetter(2)) 
     
-    #2 and #6 needs to be unix time
+    # Initialize variables/dictionary
     previous_trip_end_time = None
-    current_hour = None #start of the hour
-    dict_features = {'t_onduty': 0.0, #hours
-                     't_occupied': 0.0, #hours
-                     'n_pass': 0.0,
-                     'n_trip': 0.0,
-                     'n_mile': 0.0,
-                     'earnings': 0.0,
-                     'money_list': [0.0]*6} #cash (earnings, tip), credit (same), other (same)
+    current_hour = None
+    dict_features = {'t_onduty': 0.0, #fraction of hour
+                     't_occupied': 0.0, # fraction of hour
+                     'n_pass': 0.0, # number of passengers
+                     'n_trip': 0.0, # number of trips started
+                     'n_mile': 0.0, # number of miles driven
+                     'earnings': 0.0, # money earned
+                     'money_list': [0.0]*6} #cash (earnings, tip), credit (earnings, tip), other (earnings, tip)
     
     for record in group:
-
-        # process
+        # Convert string date/time to unix datetime
         try:
             current_start_time = datetime.strptime(record[2], "%Y-%m-%d %H:%M:%S")
             current_end_time = datetime.strptime(record[6], "%Y-%m-%d %H:%M:%S")
@@ -56,59 +56,66 @@ for hack, group in groupby(data, itemgetter(0)):
             print >> sys.stderr, "error"
             continue
 
-    
+        # Find hour of current trip    
         current_hour_of_trip = current_start_time - timedelta(minutes=current_start_time.minute,
                                                               seconds=current_start_time.second)
 
         t_onduty_extra_time = 0.0
+        # First trip for a HackID/year
         if previous_trip_end_time is None:
             current_hour = current_hour_of_trip
             previous_trip_end_time = current_start_time
+        # New trip does not start w/in current hour
         elif current_hour != current_hour_of_trip:
-            # t_onduty
+            # Calculate on-duty time for unoccupied time containing hour break
             if current_start_time - previous_trip_end_time < timedelta(minutes=30):
                 dict_features['t_onduty'] += (current_hour + timedelta(hours=1) - previous_trip_end_time).seconds / 3600.0
                 t_onduty_extra_time = (current_start_time - current_hour_of_trip).seconds / 3600.0 
 
-            # dump and flush
+            # Finish hour
             dict_features = end_hour(current_hour, hack, dict_features)
-            # update the current
+            # Update current hour
             current_hour = current_hour_of_trip
 
+        # New trip's information to dictionary
         dict_features['n_pass'] += int(record[7])
         dict_features['n_trip'] += 1
         trip_time = current_end_time - current_start_time
         dict_features['t_onduty'] += t_onduty_extra_time
         
+        # If trip ends in the same hour it begins
         if current_end_time.hour == current_start_time.hour:
+            # Add all trip miles/earning/time occupied to current hour
             dict_features['n_mile'] += float(record[8])
             dict_features['earnings'] += float(record[5])
             dict_features['t_occupied'] += trip_time.seconds / 3600.0 
 
-            # t_onduty
+            # Add pre-trip time to time occupied, if necessary
             if current_start_time - previous_trip_end_time < timedelta(minutes=30) and previous_trip_end_time >= current_hour:
                 dict_features['t_onduty'] += (current_end_time - previous_trip_end_time).seconds / 3600.0
             else:
                 dict_features['t_onduty'] += trip_time.seconds / 3600.0
 
             # extra earnings
+        # If trip crosses hour break
         else:
+            # Add relevant proportion of trip miles/earnings/time occupied to current hour
             trip_time_within_hour = (current_hour + timedelta(hours=1) - current_start_time)
             proportion_in_hour = float(trip_time_within_hour.seconds) / trip_time.seconds
             dict_features['n_mile'] += proportion_in_hour * float(record[8])
             dict_features['earnings'] += proportion_in_hour * float(record[5])
             dict_features['t_occupied'] += trip_time_within_hour.seconds / 3600.0
 
-            #t_onduty
+            # Add pre-trip time to time occupied, if necessary
             if current_start_time - previous_trip_end_time < timedelta(minutes=30) and previous_trip_end_time >= current_hour:
                 dict_features['t_onduty'] += (current_hour + timedelta(hours=1) - previous_trip_end_time).seconds / 3600.0
             else:
                 dict_features['t_onduty'] += trip_time_within_hour.seconds / 3600.0
 
-            # t_onduty
-            # flush this hour:
+            # Finish hour
             dict_features = end_hour(current_hour, hack, dict_features)
             current_hour += timedelta(hours=1)
+            # Add records for trips crossing multiple hour breaks
             while current_hour.hour != current_end_time.hour:
                 dict_features['n_mile'] += 3600.0 / trip_time.seconds * float(record[8])
                 dict_features['earnings'] += 3600.0 / trip_time.seconds * float(record[5])
@@ -118,7 +125,7 @@ for hack, group in groupby(data, itemgetter(0)):
                 dict_features = end_hour(current_hour, hack, dict_features)
                 current_hour += timedelta(hours=1)
 
-            # rest of the part of trip
+            # Add record for hour in which trip ends
             trip_time_within_hour = (current_end_time - current_hour)
             proportion_in_hour = float(trip_time_within_hour.seconds) / trip_time.seconds
             dict_features['n_mile'] += proportion_in_hour * float(record[8])
@@ -126,6 +133,5 @@ for hack, group in groupby(data, itemgetter(0)):
             dict_features['t_occupied'] += trip_time_within_hour.seconds / 3600.0
             dict_features['t_onduty'] += trip_time_within_hour.seconds / 3600.0
 
-        #print current_start_time,':', dict_features['t_onduty']
         previous_trip_end_time = current_end_time
     dict_features = end_hour(current_hour, hack, dict_features)
