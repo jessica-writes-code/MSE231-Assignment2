@@ -32,6 +32,7 @@ def end_hour(current_hour, hack, dict_features):
 
 data = read_mapper_output(sys.stdin)
 # Data become grouped by HackID/Year
+money_list_lookup = {'CSH': 0, 'CRD': 2, 'Other': 4}
 for hack, group in groupby(data, itemgetter(0)):
     # Sort records with same HackID by trip start date/time
     group = sorted(group, key=itemgetter(2)) 
@@ -56,7 +57,7 @@ for hack, group in groupby(data, itemgetter(0)):
             print >> sys.stderr, "error"
             continue
 
-        # Find hour of current trip    
+        # Find hour of current trip
         current_hour_of_trip = current_start_time - timedelta(minutes=current_start_time.minute,
                                                               seconds=current_start_time.second)
 
@@ -82,12 +83,19 @@ for hack, group in groupby(data, itemgetter(0)):
         dict_features['n_trip'] += 1
         trip_time = current_end_time - current_start_time
         dict_features['t_onduty'] += t_onduty_extra_time
-        
+        # find our index to add earnings to the correct column of 'money_list'
+        # default is 'Other' unless 'CSH' or 'CRD' is found
+        money_list_index = money_list_lookup['Other']
+        if record[3] in money_list_lookup:
+            money_list_index = money_list_lookup[record[3]]
+
         # If trip ends in the same hour it begins
         if current_end_time.hour == current_start_time.hour:
             # Add all trip miles/earning/time occupied to current hour
             dict_features['n_mile'] += float(record[8])
             dict_features['earnings'] += float(record[5])
+            dict_features['money_list'][money_list_index] += float(record[5])
+            dict_features['money_list'][money_list_index + 1] += float(record[4])
             dict_features['t_occupied'] += trip_time.seconds / 3600.0 
 
             # Add pre-trip time to time occupied, if necessary
@@ -96,7 +104,6 @@ for hack, group in groupby(data, itemgetter(0)):
             else:
                 dict_features['t_onduty'] += trip_time.seconds / 3600.0
 
-            # extra earnings
         # If trip crosses hour break
         else:
             # Add relevant proportion of trip miles/earnings/time occupied to current hour
@@ -104,6 +111,8 @@ for hack, group in groupby(data, itemgetter(0)):
             proportion_in_hour = float(trip_time_within_hour.seconds) / trip_time.seconds
             dict_features['n_mile'] += proportion_in_hour * float(record[8])
             dict_features['earnings'] += proportion_in_hour * float(record[5])
+            dict_features['money_list'][money_list_index] += proportion_in_hour * float(record[5])
+            dict_features['money_list'][money_list_index + 1] += proportion_in_hour * float(record[4])
             dict_features['t_occupied'] += trip_time_within_hour.seconds / 3600.0
 
             # Add pre-trip time to time occupied, if necessary
@@ -115,13 +124,15 @@ for hack, group in groupby(data, itemgetter(0)):
             # Finish hour
             dict_features = end_hour(current_hour, hack, dict_features)
             current_hour += timedelta(hours=1)
+
             # Add records for trips crossing multiple hour breaks
             while current_hour.hour != current_end_time.hour:
                 dict_features['n_mile'] += 3600.0 / trip_time.seconds * float(record[8])
                 dict_features['earnings'] += 3600.0 / trip_time.seconds * float(record[5])
+                dict_features['money_list'][money_list_index] += 3600.0 / trip_time.seconds * float(record[5])
+                dict_features['money_list'][money_list_index + 1] += 3600.0 / trip_time.seconds * float(record[4])
                 dict_features['t_occupied'] = 1.0
                 dict_features['t_onduty'] = 1.0
-                #extra earnings
                 dict_features = end_hour(current_hour, hack, dict_features)
                 current_hour += timedelta(hours=1)
 
@@ -130,6 +141,8 @@ for hack, group in groupby(data, itemgetter(0)):
             proportion_in_hour = float(trip_time_within_hour.seconds) / trip_time.seconds
             dict_features['n_mile'] += proportion_in_hour * float(record[8])
             dict_features['earnings'] += proportion_in_hour * float(record[5])
+            dict_features['money_list'][money_list_index] += proportion_in_hour * float(record[5])
+            dict_features['money_list'][money_list_index + 1] += proportion_in_hour * float(record[4])
             dict_features['t_occupied'] += trip_time_within_hour.seconds / 3600.0
             dict_features['t_onduty'] += trip_time_within_hour.seconds / 3600.0
 
