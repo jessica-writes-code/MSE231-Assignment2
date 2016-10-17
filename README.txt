@@ -22,10 +22,39 @@ join_map.py and join_reduce.py
         There should be at least one CSV file of the "trip_data" format
         and one CSV file of the "trip_fare" format. Ideally, these should have 
         records which match on medallion, hack license, and pickup_datetime.
-    Output
+    Output:
         Tab-separated records which include both trip and fare information for 
         all matching records (i.e., those appearing in both files).
     Notes:
-        The reduce step performs filtering for obviously erroneous data. 
-        See the corresponding report for additional details.
+        The reduce step performs filtering for obviously erroneous data.
+        Specifically, the reduce step eliminates records for which:
+        - no data exists about either the trip or the fare
+        - total fare was less than $2.50
+        - total passengers was either not an integer, less than 0 or equal to 0
+        - trip time was less than or equal to 0
+        - trip distance is less than or equal to 0
 
+driver_stats_map.py and driver_stats_reduce.py
+    Perform the map and reduce steps (respectively) to aggregate trip-level data
+    to driver-hour-level data.
+    Input:
+        Tab-separated data of the form outputted by join_reduce.py
+    Output:
+        Tab-separated records at the driver-hour level (i.e., each record identifies
+        one driver in one hour). Output records contain the following fields, in order:
+            date
+            hour
+            hackID
+            t_onduty - fraction of hour the driver was on-duty
+            t_occupied - fraction of hour the driver was occupied with rides
+            n_pass - number of passengers whose rides started in the hour
+            n_trip - number of trips started in the hour
+            n_mile - number of miles driven in the hour
+            earnings - amount earned in the hour
+    Notes:
+        1) t_occupied is calculated assuming a driver is "on-duty" between the 
+        beginning of his/her frist trip after a (at least) half-hour break and 
+        his/her next half-hour break
+        2) when trips begin in one hour and end in another, n_mile and earnings
+        allocate miles and earnings in accordance with the proportion of the trip
+        that occurred in each hour 
