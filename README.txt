@@ -51,10 +51,19 @@ driver_stats_map.py and driver_stats_reduce.py
             n_trip - number of trips started in the hour
             n_mile - number of miles driven in the hour
             earnings - amount earned in the hour
+            cash earnings - amount earned via cash in the hour
+            cash tip - amount tipped via cash in the hour
+            credit earnings - amount earned via credit card in the hour
+            cash fare - amount tippped via credit card in the hour
+            other earnings - amount earned via non-cash, non-credit in the hour
+            other tip - amount earned via non-cash, non-credit in the hour
     Notes:
         1) t_occupied is calculated assuming a driver is "on-duty" between the 
         beginning of his/her frist trip after a (at least) half-hour break and 
         his/her next half-hour break
-        2) when trips begin in one hour and end in another, n_mile and earnings
+        2) When trips begin in one hour and end in another, n_mile and earnings
         allocate miles and earnings in accordance with the proportion of the trip
         that occurred in each hour 
+        3) Cash tip is not systematically recorded in the data; it is almost 
+        always zero. The last six columns record the fare & tip for distinct
+        types of transactions so that cash tips can be estimated later.
