@@ -25,6 +25,9 @@ join_map.py and join_reduce.py
     Output:
         Tab-separated records which include both trip and fare information for 
         all matching records (i.e., those appearing in both files).
+    Key:
+        The key between the map step and the reduce step is a concatenation of
+        medallion, hack id, and pickup date/time.
     Notes:
         The reduce step performs filtering for obviously erroneous data.
         Specifically, the reduce step eliminates records for which:
@@ -47,16 +50,18 @@ driver_stats_map.py and driver_stats_reduce.py
             hackID
             t_onduty - fraction of hour the driver was on-duty
             t_occupied - fraction of hour the driver was occupied with rides
-            n_pass - number of passengers whose rides started in the hour
-            n_trip - number of trips started in the hour
-            n_mile - number of miles driven in the hour
+            n_pass - number of passengers whose rides with the driver started in the hour
+            n_trip - number of trips the driver started in the hour
+            n_mile - number of miles the driver drove in the hour
             earnings - amount earned in the hour
             cash earnings - amount earned via cash in the hour
             cash tip - amount tipped via cash in the hour
             credit earnings - amount earned via credit card in the hour
             credit tip - amount tippped via credit card in the hour
-            other earnings - amount earned via non-cash, non-credit in the hour
-            other tip - amount earned via non-cash, non-credit in the hour
+            other earnings - amount earned via non-cash, non-credit transactions in the hour
+            other tip - amount tipped via non-cash, non-credit transactions in the hour
+    Key:
+        The key between the map step and the reduce step is hack id.
     Notes:
         1) t_occupied is calculated assuming a driver is "on-duty" between the 
         beginning of his/her frist trip after a (at least) half-hour break and 
@@ -67,3 +72,28 @@ driver_stats_map.py and driver_stats_reduce.py
         3) Cash tip is not systematically recorded in the data; it is almost 
         always zero. The last six columns record the fare & tip for distinct
         types of transactions so that cash tips can be estimated later.
+
+aggregate_map.py and aggregate_reduce.py
+    Perform the map and reduce steps (respectively) to aggregate driver-hour-level
+    data to hour-level data (i.e., aggregating over drivers)
+    Input:
+        Tab-separated data of the form outputted by driver_stats_reduce.py (See above.)
+    Output:
+        Tab-separated records at the hour-level (i.e., each record identifies one
+        hour of each of the days in the data). Output records contain the following fields, in order:
+            date
+            hour
+            drivers_onduty - number of drivers on-duty for at least one minute during the hour
+            drivers_occupied - number of drivers occupied for at least one minute during the hour (same as drivers_onduty)
+            t_onduty - total driver on-duty hours during the hour
+            t_occupied - total driver occupied (i.e., with passengers) hours during the hour
+            n_pass - total number of passengers whose rides started in the hour
+            n_trip - total number of trips drivers started in the hour
+            n_mile - total number of miles driven in the hour
+            earnings - amount drivers earned in the hour
+            cash earnings - amount earned via cash in the hour
+            cash tip - amount tipped via cash in the hour
+            credit earnings - amount earned via credit card in the hour
+            credit tip - amount tippped via credit card in the hour
+            other earnings - amount earned via non-cash, non-credit transactions in the hour
+            other tip - amount tipped via non-cash, non-credit transactions in the hour
