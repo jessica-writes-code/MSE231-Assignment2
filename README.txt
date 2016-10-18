@@ -54,7 +54,7 @@ driver_stats_map.py and driver_stats_reduce.py
             cash earnings - amount earned via cash in the hour
             cash tip - amount tipped via cash in the hour
             credit earnings - amount earned via credit card in the hour
-            cash fare - amount tippped via credit card in the hour
+            credit tip - amount tippped via credit card in the hour
             other earnings - amount earned via non-cash, non-credit in the hour
             other tip - amount earned via non-cash, non-credit in the hour
     Notes:
