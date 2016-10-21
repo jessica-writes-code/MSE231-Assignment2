@@ -97,3 +97,31 @@ aggregate_map.py and aggregate_reduce.py
             credit tip - amount tippped via credit card in the hour
             other earnings - amount earned via non-cash, non-credit transactions in the hour
             other tip - amount tipped via non-cash, non-credit transactions in the hour
+
+taxi_analysis.R
+    Combine outputs of aggregate step; export combined taxi data/precipitation
+    data frame; create/export graphs of supply/demand metrics
+    Input:
+        Several tab-separated data files of the form outputted by aggregate_reduce.py
+            Files located in "Aggregate Date" and named "part-00000" through "part-00010"
+        Comma-separated data file from NOAA recording hourly precipitation levels in Central Park from January 1, 2010 through December 31, 2013
+    Output:
+        1) Tab-separated records at the day/hour level. Output contains the following fields, in order:
+            date
+            hour
+            precip - amount of precipitation in Central Park
+            drivers_onduty - drivers onduty for at least one minute in the hour
+            drivers_occupied - drivers occupied for at least one minute in the hour
+            t_onduty - driver-hours onduty in the hour
+            t_occupied - driver-hours occupied in the hour
+            n_pass - number of passengers whose trips started in the hour
+            n_trip - number of trips started in the hour
+            n_mile - number of miles driven in the hour
+            earnings - amount of money earned (from fares and tips) in the hour
+        2) PNG Files of graphs showing the following information for every
+        hour of the day
+            Earnings per Driver-Hour On Duty (Earnings_Per_TOnduty.png)
+            Average Trip Length (Avg_Trip_Length.png)
+            Average Driver-Hours On-Duty (Avg_Driver_Hours_OnDuty.png)
+            Average Driver-Hours Occupied (Avg_Driver_Hours_Occupied.png
+            Ratio of Occupied Driver-Hours to On-Duty Driver Hours (Occupied_Onduty_Ratio.png)
