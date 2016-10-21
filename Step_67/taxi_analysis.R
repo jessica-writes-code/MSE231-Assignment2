@@ -58,7 +58,7 @@ taxi_rain_df <- combined_data %>%
 ggplot(taxi_rain_df, aes(x=disp_hour, y=earnings_per_t_onduty, group=precip_level, colour=precip_level)) +
   geom_line() +
   scale_x_continuous(breaks=seq(0,25,by=3)) +
-  labs(x="Hour of Day", y="$ per Driver-Hours Onduty") +
+  labs(x="Hour of Day", y="$ per Hour Onduty") +
   theme(legend.position="bottom") +
   theme(legend.title=element_blank())
 ggsave("Earnings_Per_TOnduty.png", width=6, height=4)
