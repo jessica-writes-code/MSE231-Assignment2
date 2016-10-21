@@ -14,20 +14,31 @@ names(taxi_df) <- c("date","hour", "n_onduty","n_occupied", "t_onduty", "t_occup
 precip_df <- read.csv("nyc_precipitation.csv", sep=",", header=TRUE, as.is=TRUE)
 
 # Standardize and format data
-precip_df$hour <- as.integer(substr(precip_df$DATE, 10, 11))
-precip_df$date <- paste0(substr(precip_df$DATE, 1, 4),"-",substr(precip_df$DATE, 5, 6),"-",substr(precip_df$DATE, 7, 8))
+precip_df$DATE <- as.POSIXct(precip_df$DATE, format="%Y%m%d %H:%M") - 3600
+precip_df$DATE <- as.character(precip_df$DATE)
+
+precip_df$hour <- as.integer(substr(precip_df$DATE, 12, 13))
+precip_df$date <- substr(precip_df$DATE, 1, 10)
 
 taxi_df$date <- as.character(taxi_df$date)
 
 # Join data
 combined_data <- taxi_df %>% left_join(precip_df, by = c("date","hour"))
+
+# Write-out Table
+combined_data_out <- combined_data[,c("date","hour","HPCP","n_onduty","n_occupied", "t_onduty", "t_occupied", "n_pass", "n_trips", "n_miles", "earnings")]
+names(combined_data_out) <- c("date","hour","precip","drivers_onduty","drivers_occupied", "t_onduty", "t_occupied", "n_pass", "n_trip", "n_mile", "earnings")
+write.table(combined_data_out, file="taxi_precip_data.tsv", sep="\t")
+
+# Supply & Demand Analysis
+## Remove NAs in precipitation data
 combined_data$HPCP <- ifelse(is.na(combined_data$HPCP), -1, combined_data$HPCP)
 combined_data$precip_level <- ifelse(combined_data$HPCP >= 1, "> 1in", 
                                      ifelse(combined_data$HPCP >= 0, "0in to 1in", 
                                             "No rain"))
 combined_data$precip_level <- factor(combined_data$precip_level, levels=c("No rain","0in to 1in","> 1in"), ordered = TRUE)
 
-# Supply & Demand Analysis
+
 ## Data frame manipulation
 taxi_rain_df <- combined_data %>% 
                   group_by(hour, precip_level) %>%
@@ -40,44 +51,52 @@ taxi_rain_df <- combined_data %>%
                              avg_trip_length = total_t_occupied/total_n_trips,
                              avg_t_onduty = total_t_onduty/total_hours,
                              avg_t_occupied = total_t_occupied/total_hours,
-                             ratio_occupied_onduty = total_t_occupied/total_t_onduty)
+                             ratio_occupied_onduty = total_t_occupied/total_t_onduty,
+                             disp_hour = hour + 0.5)
 
 ## Earnings/Hour On Duty
-ggplot(taxi_rain_df, aes(x=hour, y=earnings_per_t_onduty, group=precip_level, colour=precip_level)) +
-  geom_line()
+ggplot(taxi_rain_df, aes(x=disp_hour, y=earnings_per_t_onduty, group=precip_level, colour=precip_level)) +
+  geom_line() +
+  scale_x_continuous(breaks=seq(0,25,by=3)) +
+  labs(x="Hour of Day", y="$ per Driver-Hours Onduty") +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank())
+ggsave("Earnings_Per_TOnduty.png", width=6, height=4)
 
 ## Average Trip Length
 ggplot(taxi_rain_df, aes(x=hour, y=avg_trip_length, group=precip_level, colour=precip_level)) +
-  geom_line()
+  geom_line() +
+  scale_x_continuous(breaks=seq(0,25,by=3)) +
+  labs(x="Hour of Day", y="Avg. Trip Length (Prop. of Hour)") +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank())
+ggsave("Avg_Trip_Length.png", width=6, height=4)
 
 ## Average Driver-Hours On-Duty
 ggplot(taxi_rain_df, aes(x=hour, y=avg_t_onduty, group=precip_level, colour=precip_level)) +
-  geom_line()
+  geom_line() +
+  scale_x_continuous(breaks=seq(0,25,by=3)) +
+  labs(x="Hour of Day", y="Avg. Driver-Hours On-Duty") +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank())
+ggsave("Avg_Driver_Hours_OnDuty.png", width=6, height=4)
 
 ## Average Driver-Hours Occupied
 ggplot(taxi_rain_df, aes(x=hour, y=avg_t_occupied, group=precip_level, colour=precip_level)) +
-  geom_line()
+  geom_line() +
+  scale_x_continuous(breaks=seq(0,25,by=3)) +
+  labs(x="Hour of Day", y="Avg. Driver-Hours Occupied") +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank())
+ggsave("Avg_Driver_Hours_Occupied.png", width=6, height=4)
 
 ## Ratio of Occupied to Onduty
 ggplot(taxi_rain_df, aes(x=hour, y=ratio_occupied_onduty, group=precip_level, colour=precip_level)) +
-  geom_line()
-
-
-Argument:
-  drivers make less money per hour b/c trips take longer
-    - $/time on duty
-    - avg. trip length
-   --> drivers are not incentivized to drive more in the rain
-      we agree w/ farber 
-  
-  supply: # time onduty
-    - no substantive change in number of drivers working during rain/not rain
-    - not in line w/ farber's conclusions that there are fewer cabs working when it rains
-    
-  demand: # time occupied
-    - there is an increase in demand when it rains (in line w/ Farber's conclusions)
-    
-  ratio of supply to demand = more important
-    - occupied/on-duty
+  geom_line()+
+  scale_x_continuous(breaks=seq(0,25,by=3)) +
+  labs(x="Hour of Day", y="Occupied/Onduty Ratio") +
+  theme(legend.position="bottom") +
+  theme(legend.title=element_blank())
+ggsave("Occupied_Onduty_Ratio.png", width=6, height=4)
       
       
