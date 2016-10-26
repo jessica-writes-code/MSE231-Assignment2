@@ -118,10 +118,10 @@ taxi_analysis.R
             n_trip - number of trips started in the hour
             n_mile - number of miles driven in the hour
             earnings - amount of money earned (from fares and tips) in the hour
-        2) PNG Files of graphs showing the following information for every
+        2) PDF Files of graphs showing the following information for every
         hour of the day
-            Earnings per Driver-Hour On Duty (Earnings_Per_TOnduty.png)
-            Average Trip Length (Avg_Trip_Length.png)
-            Average Driver-Hours On-Duty (Avg_Driver_Hours_OnDuty.png)
-            Average Driver-Hours Occupied (Avg_Driver_Hours_Occupied.png
-            Ratio of Occupied Driver-Hours to On-Duty Driver Hours (Occupied_Onduty_Ratio.png)
+            Earnings per Driver-Hour On Duty (Earnings_Per_TOnduty.pdf)
+            Average Trip Length (Avg_Trip_Length.pdf)
+            Average Driver-Hours On-Duty (Avg_Driver_Hours_OnDuty.pdf)
+            Average Driver-Hours Occupied (Avg_Driver_Hours_Occupied.pdf)
+            Ratio of Occupied Driver-Hours to On-Duty Driver Hours (Occupied_Onduty_Ratio.pdf)

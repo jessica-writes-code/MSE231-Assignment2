@@ -7,10 +7,13 @@ from datetime import datetime
 from datetime import timedelta
 
 def read_mapper_output(lines):
+    # Generates an iterator that streams in the input, split on tabs
     for line in lines:
         yield line.rstrip().split('\t')
 
 def end_hour(current_hour, hack, dict_features):
+    # Prints out the cumulitive values for the current hour
+    # and clears the dictionary for the next hour
     list_to_print = []
     out_date = current_hour.strftime("%Y-%m-%d")
     out_hour = current_hour.strftime("%H")
@@ -28,7 +31,6 @@ def end_hour(current_hour, hack, dict_features):
     print '\t'.join(list_to_print)
 
     return dict_features
-   
 
 data = read_mapper_output(sys.stdin)
 # Data become grouped by HackID/Year
@@ -61,7 +63,7 @@ for hack, group in groupby(data, itemgetter(0)):
         current_hour_of_trip = current_start_time - timedelta(minutes=current_start_time.minute,
                                                               seconds=current_start_time.second)
 
-        t_onduty_extra_time = 0.0
+        t_onduty_extra_time = 0.0 #used to calculate on_duty time for the next hour
         # First trip for a HackID/year
         if previous_trip_end_time is None:
             current_hour = current_hour_of_trip
