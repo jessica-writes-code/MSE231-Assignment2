@@ -61,7 +61,7 @@ ggplot(taxi_rain_df, aes(x=disp_hour, y=earnings_per_t_onduty, group=precip_leve
   labs(x="Hour of Day", y="$ per Hour Onduty") +
   theme(legend.position="bottom") +
   theme(legend.title=element_blank())
-ggsave("Earnings_Per_TOnduty.png", width=6, height=4)
+ggsave("Earnings_Per_TOnduty.pdf", width=6, height=4)
 
 ## Average Trip Length
 ggplot(taxi_rain_df, aes(x=disp_hour, y=avg_trip_length, group=precip_level, colour=precip_level)) +
@@ -70,7 +70,7 @@ ggplot(taxi_rain_df, aes(x=disp_hour, y=avg_trip_length, group=precip_level, col
   labs(x="Hour of Day", y="Avg. Trip Length (Prop. of Hour)") +
   theme(legend.position="bottom") +
   theme(legend.title=element_blank())
-ggsave("Avg_Trip_Length.png", width=6, height=4)
+ggsave("Avg_Trip_Length.pdf", width=6, height=4)
 
 ## Average Driver-Hours On-Duty
 ggplot(taxi_rain_df, aes(x=disp_hour, y=avg_t_onduty, group=precip_level, colour=precip_level)) +
@@ -79,7 +79,7 @@ ggplot(taxi_rain_df, aes(x=disp_hour, y=avg_t_onduty, group=precip_level, colour
   labs(x="Hour of Day", y="Avg. Driver-Hours On-Duty") +
   theme(legend.position="bottom") +
   theme(legend.title=element_blank())
-ggsave("Avg_Driver_Hours_OnDuty.png", width=6, height=4)
+ggsave("Avg_Driver_Hours_OnDuty.pdf", width=6, height=4)
 
 ## Average Driver-Hours Occupied
 ggplot(taxi_rain_df, aes(x=disp_hour, y=avg_t_occupied, group=precip_level, colour=precip_level)) +
@@ -88,7 +88,7 @@ ggplot(taxi_rain_df, aes(x=disp_hour, y=avg_t_occupied, group=precip_level, colo
   labs(x="Hour of Day", y="Avg. Driver-Hours Occupied") +
   theme(legend.position="bottom") +
   theme(legend.title=element_blank())
-ggsave("Avg_Driver_Hours_Occupied.png", width=6, height=4)
+ggsave("Avg_Driver_Hours_Occupied.pdf", width=6, height=4)
 
 ## Ratio of Occupied to Onduty
 ggplot(taxi_rain_df, aes(x=disp_hour, y=ratio_occupied_onduty, group=precip_level, colour=precip_level)) +
@@ -97,4 +97,4 @@ ggplot(taxi_rain_df, aes(x=disp_hour, y=ratio_occupied_onduty, group=precip_leve
   labs(x="Hour of Day", y="Occupied/Onduty Ratio") +
   theme(legend.position="bottom") +
   theme(legend.title=element_blank())
-ggsave("Occupied_Onduty_Ratio.png", width=6, height=4)
+ggsave("Occupied_Onduty_Ratio.pdf", width=6, height=4)
